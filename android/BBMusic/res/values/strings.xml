@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">BBMusic</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_play">PlayActivity</string>
+    <string name="play">播放</string>
+    <string name="pause">暂停</string>
+    <string name="play_prev">上一首</string>
+    <string name="play_next">下一首</string>
+</resources>

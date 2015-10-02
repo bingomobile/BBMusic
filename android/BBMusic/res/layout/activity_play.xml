@@ -1,0 +1,56 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_margin="10dp"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/PlayPrevButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:onClick="onClick"
+            android:text="@string/play_prev" />
+
+        <Button
+            android:id="@+id/PlayButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:onClick="onClick"
+            android:text="@string/play" />
+        
+        <Button
+            android:id="@+id/PauseButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:onClick="onClick"
+            android:text="@string/pause"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/PlayNextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:onClick="onClick"
+            android:text="@string/play_next" />
+    </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/PlayProgressBar"
+        android:layout_width="fill_parent"  
+        android:layout_height="wrap_content"
+        android:max="1000"
+        android:progress="0"/> 
+    
+
+</LinearLayout>
