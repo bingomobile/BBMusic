@@ -47,10 +47,17 @@
 
     <SeekBar
         android:id="@+id/PlayProgressBar"
-        android:layout_width="fill_parent"  
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:max="1000"
-        android:progress="0"/> 
-    
+        android:progress="0" />
+
+    <TextView
+        android:id="@+id/PlayTime"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/default_play_time"
+        android:textAlignment="center" />
+"
 
 </LinearLayout>

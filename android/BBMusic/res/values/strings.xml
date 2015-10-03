@@ -8,4 +8,5 @@
     <string name="pause">暂停</string>
     <string name="play_prev">上一首</string>
     <string name="play_next">下一首</string>
+    <string name="default_play_time">00:00</string>
 </resources>
