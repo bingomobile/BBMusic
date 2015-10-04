@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -20,6 +21,8 @@ public class PlayActivity extends Activity {
 	private SongList songList = new SongList();
 	private boolean isProgressBarTracking = false;
 	private TextView timeTextView;
+	private TextView songTitleView;
+	private TextView songArtistView;
 
 	private int UPDATE_PROGRESS_TIME = 1000; 
 	Handler handler = new Handler();
@@ -83,12 +86,15 @@ public class PlayActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_play);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 		playButton = (Button) findViewById(R.id.PlayButton);
 		pauseButton = (Button) findViewById(R.id.PauseButton);
 		playPrevButton = (Button) findViewById(R.id.PlayPrevButton);
 		playNextButton = (Button) findViewById(R.id.PlayNextButton);
 		timeTextView = (TextView) findViewById(R.id.PlayTime);
+		songTitleView = (TextView) findViewById(R.id.SongTitle);
+		songArtistView = (TextView) findViewById(R.id.SongArtist);
 		playProgressBar = (SeekBar) findViewById(R.id.PlayProgressBar);
 		playProgressBar.setProgress(0);
 		playProgressBar.setSecondaryProgress(0);

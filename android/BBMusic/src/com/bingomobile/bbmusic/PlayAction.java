@@ -56,7 +56,7 @@ public class PlayAction {
 			return;
 		}
 		
-		player.pause();
+		player.start();
 		state = State.PLAYING;
 	}
 	

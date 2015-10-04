@@ -56,8 +56,17 @@
         android:id="@+id/PlayTime"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/default_play_time"
-        android:textAlignment="center" />
+        android:text="@string/default_play_time"/>
+    
+    <TextView
+        android:id="@+id/SongTitle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"/>
+    
+    <TextView
+        android:id="@+id/SongArtist"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"/>
 "
 
 </LinearLayout>

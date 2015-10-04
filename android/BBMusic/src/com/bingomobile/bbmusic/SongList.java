@@ -15,10 +15,16 @@ public class SongList {
 		
 		SongInfo song1 = new SongInfo();
 		song1.setUrl(Environment.getExternalStorageDirectory() + "/Music/a.mp3");
+		song1.setTitle("终于等到你");
+		song1.setArtist("张靓颖");
+		song1.setAlbum("第七感");
 		songs.add(song1);
 		
 		SongInfo song2 = new SongInfo();
 		song2.setUrl(Environment.getExternalStorageDirectory() + "/Music/b.mp3");
+		song1.setTitle("乱世俱灭");
+		song1.setArtist("赵丽颖");
+		song1.setAlbum("乱世俱灭");
 		songs.add(song2);
 	}
 	
