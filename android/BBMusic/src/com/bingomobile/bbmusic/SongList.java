@@ -22,9 +22,9 @@ public class SongList {
 		
 		SongInfo song2 = new SongInfo();
 		song2.setUrl(Environment.getExternalStorageDirectory() + "/Music/b.mp3");
-		song1.setTitle("ÂÒÊÀ¾ãÃğ");
-		song1.setArtist("ÕÔÀöÓ±");
-		song1.setAlbum("ÂÒÊÀ¾ãÃğ");
+		song2.setTitle("ÂÒÊÀ¾ãÃğ");
+		song2.setArtist("ÕÔÀöÓ±");
+		song2.setAlbum("ÂÒÊÀ¾ãÃğ");
 		songs.add(song2);
 	}
 	

@@ -1,8 +1,16 @@
 package com.bingomobile.bbmusic;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -17,26 +25,102 @@ public class PlayActivity extends Activity {
 	private Button playPrevButton;
 	private Button playNextButton;
 	private SeekBar playProgressBar;
-	private PlayAction playAction = new PlayAction();
+	private PlayAction playAction;
 	private SongList songList = new SongList();
 	private boolean isProgressBarTracking = false;
 	private TextView timeTextView;
 	private TextView songTitleView;
 	private TextView songArtistView;
+	private Intent playIntent;
 
-	private int UPDATE_PROGRESS_TIME = 1000; 
+	IntentFilter intentFilter;
+	
 	Handler handler = new Handler();
 	Runnable runnable = new Runnable() {
 		@Override
 		public void run() {
-			
-			if (!isProgressBarTracking) {
-				updateProgressBar();
-				updateTimeViewFromPlayAction();
-			}
-			handler.postDelayed(this, UPDATE_PROGRESS_TIME);
 		}
 	};
+	
+	private ServiceConnection connection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            playAction = ((PlayAction.MyBinder)service).getService(); 
+            startService(playIntent);
+        }
+        public void onServiceDisconnected(ComponentName className) {
+        	playAction = null;
+        }
+    };
+    
+    public void startPlayService() {
+    	if (playIntent == null) {
+    		playIntent = new Intent(PlayActivity.this, PlayAction.class);
+            bindService(playIntent, connection, Context.BIND_AUTO_CREATE);    
+    	}
+    	else {
+    		startService(playIntent);
+    	}
+        	
+    }
+    
+    
+    public void stopPlayService() {
+        stopService(new Intent(getBaseContext(), PlayAction.class));
+    }
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.activity_play);
+
+		startPlayService();
+		playButton = (Button) findViewById(R.id.PlayButton);
+		pauseButton = (Button) findViewById(R.id.PauseButton);
+		playPrevButton = (Button) findViewById(R.id.PlayPrevButton);
+		playNextButton = (Button) findViewById(R.id.PlayNextButton);
+		timeTextView = (TextView) findViewById(R.id.PlayTime);
+		songTitleView = (TextView) findViewById(R.id.SongTitle);
+		songArtistView = (TextView) findViewById(R.id.SongArtist);
+		playProgressBar = (SeekBar) findViewById(R.id.PlayProgressBar);
+		playProgressBar.setProgress(0);
+		playProgressBar.setSecondaryProgress(0);
+		playProgressBar.setOnSeekBarChangeListener(new PlayProgressChangeListener());
+	}
+	
+	BroadcastReceiver intentReceiver = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			if (PlayAction.SONG_CHANGED_ACTION.equals(action)) {
+				songTitleView.setText(intent.getStringExtra("Title"));
+				songArtistView.setText(intent.getStringExtra("Artist"));
+			} else if (PlayAction.PROGRESS_UPDATE_ACTION.equals(action)) {
+				UpdateProgressFromAction();
+			}
+		}
+		
+	};
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(getBaseContext());
+		intentFilter = new IntentFilter();
+        intentFilter.addAction(PlayAction.SONG_CHANGED_ACTION);
+        intentFilter.addAction(PlayAction.PROGRESS_UPDATE_ACTION);
+        lbm.registerReceiver(intentReceiver, intentFilter);
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		
+		LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(getBaseContext());
+		lbm.unregisterReceiver(intentReceiver);
+	}
 	
 	private int getRealProgress() {
 		int position = playAction.getCurrentPosition();
@@ -63,6 +147,14 @@ public class PlayActivity extends Activity {
 		return msec;
 	}
 	
+	void UpdateProgressFromAction() {
+		if (isProgressBarTracking)
+			return;
+		
+		updateProgressBar();
+		updateTimeViewFromPlayAction();
+	}
+	
 	private void updateProgressBar() {	
 		int progress = getRealProgress();
 		playProgressBar.setProgress(progress);
@@ -80,27 +172,6 @@ public class PlayActivity extends Activity {
 		int second = msec / 1000;
 		String timeText = String.format("%02d:%02d", second / 60, second % 60); 
 		timeTextView.setText(timeText);
-	}
-
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_play);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-		playButton = (Button) findViewById(R.id.PlayButton);
-		pauseButton = (Button) findViewById(R.id.PauseButton);
-		playPrevButton = (Button) findViewById(R.id.PlayPrevButton);
-		playNextButton = (Button) findViewById(R.id.PlayNextButton);
-		timeTextView = (TextView) findViewById(R.id.PlayTime);
-		songTitleView = (TextView) findViewById(R.id.SongTitle);
-		songArtistView = (TextView) findViewById(R.id.SongArtist);
-		playProgressBar = (SeekBar) findViewById(R.id.PlayProgressBar);
-		playProgressBar.setProgress(0);
-		playProgressBar.setSecondaryProgress(0);
-		playProgressBar.setOnSeekBarChangeListener(new PlayProgressChangeListener());
-		 
-		handler.postDelayed(runnable, UPDATE_PROGRESS_TIME);
 	}
 	
 	class PlayProgressChangeListener implements SeekBar.OnSeekBarChangeListener {

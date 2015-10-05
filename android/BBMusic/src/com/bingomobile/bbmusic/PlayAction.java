@@ -1,14 +1,24 @@
 package com.bingomobile.bbmusic;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import android.app.Service;
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
+import android.os.Binder;
+import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 
-public class PlayAction {
+public class PlayAction extends Service {
+	
+	public static final String SONG_CHANGED_ACTION = "com.bingomobile.bbmusic.SONG_CHANGED_ACTION";
+	public static final String PROGRESS_UPDATE_ACTION = "com.bingomobile.bbmusic.PROGRESS_UPDATE_ACTION";
 	
 	public enum State {
 	    STOPPED,
@@ -21,6 +31,8 @@ public class PlayAction {
 	private MediaPlayer player;
 	private SongList currentSongList;
 	private SongInfo currentSongInfo;
+	private Timer timer;
+	private static final int UPDATE_PROGRESS_TIME = 1000; 
 	
 	public PlayAction() {
 		initPlayer();
@@ -49,6 +61,8 @@ public class PlayAction {
 		
 		player.pause();
 		state = State.PAUSED;
+		
+		stopProgressTimer();
 	}
 	
 	private void resumePlayer() {
@@ -58,6 +72,8 @@ public class PlayAction {
 		
 		player.start();
 		state = State.PLAYING;
+		
+		startProgressTimer();
 	}
 	
 	private void playNewSong(SongInfo songInfo) {
@@ -87,7 +103,16 @@ public class PlayAction {
 			state = State.ERROR;
 		} catch (SecurityException e) {
 			state = State.ERROR;
-		}		
+		}	
+		
+		startProgressTimer();
+		
+		Intent intent = new Intent();
+    	intent.setAction(SONG_CHANGED_ACTION);
+    	intent.putExtra("Title", currentSongInfo.getTitle());
+    	intent.putExtra("Artist", currentSongInfo.getArtist());
+    	LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(getBaseContext());
+    	lbm.sendBroadcast(intent);
 	}
 	
 	public void play(SongList songList) {
@@ -214,5 +239,51 @@ public class PlayAction {
 		public void onSeekComplete(MediaPlayer mp) {
 		}
 		
+	}
+
+	private final IBinder binder = new MyBinder();
+
+    public class MyBinder extends Binder {
+        PlayAction getService() {
+            return PlayAction.this;
+        }
+    }
+    
+	@Override
+	public IBinder onBind(Intent intent) {
+		return binder;
+	}
+	
+	@Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		
+		stopProgressTimer();
+	}
+	
+	private void startProgressTimer() {
+		if (timer != null)
+			return;
+		timer = new Timer();
+        timer.scheduleAtFixedRate( new TimerTask() {
+            public void run() {
+            	Intent intent = new Intent();
+            	intent.setAction(PROGRESS_UPDATE_ACTION);
+            	LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(getBaseContext());
+            	lbm.sendBroadcast(intent);
+            }
+        }, UPDATE_PROGRESS_TIME, UPDATE_PROGRESS_TIME);
+    }
+	
+	private void stopProgressTimer() {
+		if (timer != null) {
+			timer.cancel();
+			timer = null;
+		}
 	}
 }
