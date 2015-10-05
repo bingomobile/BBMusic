@@ -111,6 +111,7 @@ public class PlayAction extends Service {
     	intent.setAction(SONG_CHANGED_ACTION);
     	intent.putExtra("Title", currentSongInfo.getTitle());
     	intent.putExtra("Artist", currentSongInfo.getArtist());
+    	intent.putExtra("LrcPath", currentSongInfo.getLrcPath());
     	LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(getBaseContext());
     	lbm.sendBroadcast(intent);
 	}

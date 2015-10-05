@@ -61,12 +61,19 @@
     <TextView
         android:id="@+id/SongTitle"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:text="@string/song_title"/>
     
     <TextView
         android:id="@+id/SongArtist"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"/>
-"
+        android:layout_height="wrap_content"
+        android:text="@string/artist"/>
 
+    <TextView
+        android:id="@+id/LrcTextView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp" 
+        android:text="@string/lyric"/>
 </LinearLayout>

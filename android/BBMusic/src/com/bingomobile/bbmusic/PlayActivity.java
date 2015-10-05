@@ -1,5 +1,12 @@
 package com.bingomobile.bbmusic;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -20,6 +27,26 @@ import android.widget.Toast;
 
 public class PlayActivity extends Activity {
 
+	public class LyricItem {
+		private int startTime;
+		private String lyric;
+		public int getStartTime() {
+			return startTime;
+		}
+		
+		public void setStartTime(int startTime) {
+			this.startTime = startTime;
+		}
+		
+		public String getLyric() {
+			return lyric;
+		}
+		
+		public void setLyric(String lyric) {
+			this.lyric = lyric;
+		}
+		
+	}
 	private Button playButton;
 	private Button pauseButton;
 	private Button playPrevButton;
@@ -31,7 +58,9 @@ public class PlayActivity extends Activity {
 	private TextView timeTextView;
 	private TextView songTitleView;
 	private TextView songArtistView;
+	private TextView lrcTextView;
 	private Intent playIntent;
+	List<LyricItem> lyrics = new ArrayList<LyricItem>();
 
 	IntentFilter intentFilter;
 	
@@ -82,6 +111,7 @@ public class PlayActivity extends Activity {
 		timeTextView = (TextView) findViewById(R.id.PlayTime);
 		songTitleView = (TextView) findViewById(R.id.SongTitle);
 		songArtistView = (TextView) findViewById(R.id.SongArtist);
+		lrcTextView = (TextView) findViewById(R.id.LrcTextView);
 		playProgressBar = (SeekBar) findViewById(R.id.PlayProgressBar);
 		playProgressBar.setProgress(0);
 		playProgressBar.setSecondaryProgress(0);
@@ -96,12 +126,115 @@ public class PlayActivity extends Activity {
 			if (PlayAction.SONG_CHANGED_ACTION.equals(action)) {
 				songTitleView.setText(intent.getStringExtra("Title"));
 				songArtistView.setText(intent.getStringExtra("Artist"));
+				lrcTextView.setText("");
+				
+				String lrcPath = intent.getStringExtra("LrcPath");
+				LoadLrc(lrcPath);
+				
 			} else if (PlayAction.PROGRESS_UPDATE_ACTION.equals(action)) {
 				UpdateProgressFromAction();
+				UpdateLyric();
 			}
 		}
 		
 	};
+	
+	void LoadLrc(String lrcPath) {
+		if (lrcPath == null)
+			return;
+		
+		lyrics.clear();
+		try {
+			FileInputStream inputStream = openFileInput(lrcPath);
+			InputStreamReader inputReader = new InputStreamReader(inputStream);
+			BufferedReader bufferedReader = new BufferedReader(inputReader);
+			String line;
+			while ((line = bufferedReader.readLine()) != null) {
+				line.trim();
+				if (!line.matches("\\[(\\d+):(\\d+).(\\d+)\\][\\s\\S]*")) {
+					continue;
+				}
+				
+				int start = 0;
+				int end = 0;
+				start = line.indexOf("[", 0) + 1;
+				start++;
+				end = line.indexOf(":", start);
+				for (; start < end; start++) {
+					if (line.indexOf(start) != '0') {
+						break;
+					}
+				}
+				
+				String subString = "";
+				int time = 0;
+				if (end > start) {
+					subString = line.substring(start, end);
+					time += Integer.parseInt(subString) * 60 * 1000;
+				}
+				
+				
+				start = end + 1;
+				end = line.indexOf(".", start);
+				for (; start < end; start++) {
+					if (line.indexOf(start) != '0') {
+						break;
+					}
+				}
+				
+				if (end > start) {
+					subString = line.substring(start, end);
+					time += Integer.parseInt(subString) * 1000;
+				}
+				
+				start = end + 1;
+				end = line.indexOf("]", start);
+				for (; start < end; start++) {
+					if (line.indexOf(start) != '0') {
+						break;
+					}
+				}
+				
+				if (end > start) {
+					subString = line.substring(start, end);
+					time += Integer.parseInt(subString);
+				}
+				
+				String lyric = "";
+				if (line.length() > end + 1) {
+					lyric = line.substring(end + 1);
+				}
+				
+				LyricItem item = new LyricItem();
+				item.setStartTime(time);
+				item.setLyric(lyric);
+				lyrics.add(item);
+			}
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+			lyrics.clear();
+		} catch (Exception e) {
+			e.printStackTrace();
+			lyrics.clear();
+		}
+		
+		UpdateLyric();
+	}
+	
+	void UpdateLyric() {
+		if (lyrics.isEmpty())
+			return;
+		
+		int msec = playAction.getCurrentPosition();
+		int i = 0;
+		for (; i < lyrics.size() - 1; i++) {
+			if (msec < lyrics.get(i + 1).getStartTime()) {
+				break;
+			}
+		}
+		
+		lrcTextView.setText(lyrics.get(i).getLyric());
+	}
 	
 	@Override
 	protected void onResume() {

@@ -18,6 +18,8 @@ public class SongList {
 		song1.setTitle("终于等到你");
 		song1.setArtist("张靓颖");
 		song1.setAlbum("第七感");
+		song1.setLrcUrl("http://music.baidu.com/data2/lrc/130328498/130328498.lrc");
+		song1.setLrcPath("a.lrc");
 		songs.add(song1);
 		
 		SongInfo song2 = new SongInfo();
@@ -25,6 +27,8 @@ public class SongList {
 		song2.setTitle("乱世俱灭");
 		song2.setArtist("赵丽颖");
 		song2.setAlbum("乱世俱灭");
+		song2.setLrcUrl("http://music.baidu.com/data2/lrc/247535555/247535555.lrc");
+		song2.setLrcPath("b.lrc");
 		songs.add(song2);
 	}
 	

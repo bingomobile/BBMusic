@@ -8,6 +8,7 @@ public class SongInfo {
 	private int duration;
 	private int fileSize;
 	private String lrcUrl;
+	private String lrcPath;
 		
 	public String getUrl() {
 		return url;
@@ -63,6 +64,14 @@ public class SongInfo {
 	
 	public void setLrcUrl(String lrcUrl) {
 		this.lrcUrl = lrcUrl;
+	}
+	
+	public String getLrcPath() {
+		return lrcPath;
+	}
+	
+	public void setLrcPath(String lrcPath) {
+		this.lrcPath = lrcPath;
 	}
 	
 }
