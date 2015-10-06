@@ -126,89 +126,50 @@ public class PlayActivity extends Activity {
 			if (PlayAction.SONG_CHANGED_ACTION.equals(action)) {
 				songTitleView.setText(intent.getStringExtra("Title"));
 				songArtistView.setText(intent.getStringExtra("Artist"));
+				lyrics.clear();
 				lrcTextView.setText("");
-				
-				String lrcPath = intent.getStringExtra("LrcPath");
-				LoadLrc(lrcPath);
-				
 			} else if (PlayAction.PROGRESS_UPDATE_ACTION.equals(action)) {
 				UpdateProgressFromAction();
 				UpdateLyric();
+			} else if (PlayAction.LYRIC_READY_ACTION.equals(action)) {
+				LoadLrcFromString(intent.getStringExtra("Lyric"));
 			}
 		}
 		
 	};
 	
+	void LoadLrcFromString(String lyricText) {
+		lyrics.clear();
+		
+		if (lyricText == null)
+			return;
+		
+		String[] lyricTexts = lyricText.split("\n");
+		for (int i = 0; i < lyricTexts.length; i++) {
+			LyricItem item = ParseLyricItem(lyricTexts[i]);
+			if (item != null) {
+				lyrics.add(item);
+			}
+		}
+		
+		UpdateLyric();
+	}
+	
 	void LoadLrc(String lrcPath) {
+		lyrics.clear();
 		if (lrcPath == null)
 			return;
 		
-		lyrics.clear();
 		try {
 			FileInputStream inputStream = openFileInput(lrcPath);
 			InputStreamReader inputReader = new InputStreamReader(inputStream);
 			BufferedReader bufferedReader = new BufferedReader(inputReader);
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
-				line.trim();
-				if (!line.matches("\\[(\\d+):(\\d+).(\\d+)\\][\\s\\S]*")) {
-					continue;
+				LyricItem item = ParseLyricItem(line);
+				if (item != null) {
+					lyrics.add(item);
 				}
-				
-				int start = 0;
-				int end = 0;
-				start = line.indexOf("[", 0) + 1;
-				start++;
-				end = line.indexOf(":", start);
-				for (; start < end; start++) {
-					if (line.indexOf(start) != '0') {
-						break;
-					}
-				}
-				
-				String subString = "";
-				int time = 0;
-				if (end > start) {
-					subString = line.substring(start, end);
-					time += Integer.parseInt(subString) * 60 * 1000;
-				}
-				
-				
-				start = end + 1;
-				end = line.indexOf(".", start);
-				for (; start < end; start++) {
-					if (line.indexOf(start) != '0') {
-						break;
-					}
-				}
-				
-				if (end > start) {
-					subString = line.substring(start, end);
-					time += Integer.parseInt(subString) * 1000;
-				}
-				
-				start = end + 1;
-				end = line.indexOf("]", start);
-				for (; start < end; start++) {
-					if (line.indexOf(start) != '0') {
-						break;
-					}
-				}
-				
-				if (end > start) {
-					subString = line.substring(start, end);
-					time += Integer.parseInt(subString);
-				}
-				
-				String lyric = "";
-				if (line.length() > end + 1) {
-					lyric = line.substring(end + 1);
-				}
-				
-				LyricItem item = new LyricItem();
-				item.setStartTime(time);
-				item.setLyric(lyric);
-				lyrics.add(item);
 			}
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
@@ -219,6 +180,69 @@ public class PlayActivity extends Activity {
 		}
 		
 		UpdateLyric();
+	}
+	
+	LyricItem ParseLyricItem(String line) {
+		line.trim();
+		if (!line.matches("\\[(\\d+):(\\d+).(\\d+)\\][\\s\\S]*")) {
+			return null;
+		}
+		
+		int start = 0;
+		int end = 0;
+		start = line.indexOf("[", 0) + 1;
+		start++;
+		end = line.indexOf(":", start);
+		for (; start < end; start++) {
+			if (line.indexOf(start) != '0') {
+				break;
+			}
+		}
+		
+		String subString = "";
+		int time = 0;
+		if (end > start) {
+			subString = line.substring(start, end);
+			time += Integer.parseInt(subString) * 60 * 1000;
+		}
+		
+		
+		start = end + 1;
+		end = line.indexOf(".", start);
+		for (; start < end; start++) {
+			if (line.indexOf(start) != '0') {
+				break;
+			}
+		}
+		
+		if (end > start) {
+			subString = line.substring(start, end);
+			time += Integer.parseInt(subString) * 1000;
+		}
+		
+		start = end + 1;
+		end = line.indexOf("]", start);
+		for (; start < end; start++) {
+			if (line.indexOf(start) != '0') {
+				break;
+			}
+		}
+		
+		if (end > start) {
+			subString = line.substring(start, end);
+			time += Integer.parseInt(subString);
+		}
+		
+		String lyric = "";
+		if (line.length() > end + 1) {
+			lyric = line.substring(end + 1);
+		}
+		
+		LyricItem item = new LyricItem();
+		item.setStartTime(time);
+		item.setLyric(lyric);
+		
+		return item;
 	}
 	
 	void UpdateLyric() {
@@ -244,6 +268,7 @@ public class PlayActivity extends Activity {
 		intentFilter = new IntentFilter();
         intentFilter.addAction(PlayAction.SONG_CHANGED_ACTION);
         intentFilter.addAction(PlayAction.PROGRESS_UPDATE_ACTION);
+        intentFilter.addAction(PlayAction.LYRIC_READY_ACTION);
         lbm.registerReceiver(intentReceiver, intentFilter);
 	}
 	
