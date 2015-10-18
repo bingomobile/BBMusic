@@ -141,7 +141,7 @@ public class PlayAction extends Service {
 		
 		@Override
 		public void run() {
-			if (url == null && url.length() <= 0)
+			if (url == null || url.length() <= 0)
 				return;
 			
 			HttpGet getMethod = new HttpGet(url);

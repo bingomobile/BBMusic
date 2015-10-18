@@ -14,9 +14,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.view.Window;
@@ -61,6 +63,7 @@ public class PlayActivity extends Activity {
 	private TextView lrcTextView;
 	private Intent playIntent;
 	List<LyricItem> lyrics = new ArrayList<LyricItem>();
+	LocalSongList localSongList = new LocalSongList();
 
 	IntentFilter intentFilter;
 	
@@ -116,6 +119,62 @@ public class PlayActivity extends Activity {
 		playProgressBar.setProgress(0);
 		playProgressBar.setSecondaryProgress(0);
 		playProgressBar.setOnSeekBarChangeListener(new PlayProgressChangeListener());
+		
+		
+		SongListDBAdapter db = new SongListDBAdapter(getBaseContext());
+		db.open();
+        Cursor cursor = db.getAllSongs();
+        List<SongInfo> songs = new ArrayList<SongInfo>();
+        if (cursor.moveToFirst())
+        {
+            do {
+    			int id = cursor.getInt(cursor
+    					.getColumnIndex(MediaStore.Audio.Media._ID));
+    			// 歌曲名称
+    			String title = cursor.getString(cursor
+    					.getColumnIndex(MediaStore.Audio.Media.TITLE));
+    			// 歌曲专辑名
+    			String album = cursor.getString(cursor
+    					.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+    			// 歌曲歌手名
+    			String artist = cursor.getString(cursor
+    					.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+    			// 歌曲文件路径
+    			String url = cursor.getString(cursor
+    					.getColumnIndex("url"));
+    			// 歌曲时长
+    			int duration = cursor.getInt(cursor
+    					.getColumnIndex(MediaStore.Audio.Media.DURATION));
+    			// 歌曲大小
+    			int size = cursor.getInt(cursor
+    					.getColumnIndex("size"));
+    			
+    			SongInfo song = new SongInfo();
+    			song.setUrl(url);
+    			song.setTitle(title);
+    			song.setAlbum(album);
+    			song.setArtist(artist);
+    			song.setDuration(duration);
+    			song.setFileSize(size);
+    			songs.add(song);
+    			
+            } while (cursor.moveToNext());
+        }
+        
+		
+        if (songs.size() > 0) {
+        	
+        } else {
+        	songs = localSongList.scanMusicFileFromSdcard(getBaseContext());
+        	for (SongInfo song : songs) {
+        		db.insertSong(song);
+        	}
+        }
+        
+        db.close();
+		localSongList.setSongs(songs);
+		localSongList.setCurrentSongIndex(0);
+		songList = localSongList;
 	}
 	
 	BroadcastReceiver intentReceiver = new BroadcastReceiver() {

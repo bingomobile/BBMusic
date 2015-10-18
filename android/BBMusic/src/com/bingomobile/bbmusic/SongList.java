@@ -40,12 +40,24 @@ public class SongList {
 		return songs;
 	}
 	
+	public void setSongs(List<SongInfo> songs) {
+		if (this.songs == songs)
+			return;
+		
+		this.songs = songs;
+		this.currentIndex = -1;
+	}
+	
 	public SongInfo getCurrentSong() {
 		if (currentIndex < 0 || currentIndex >= songs.size()) {
 			return null;
 		}
 		
 		return songs.get(currentIndex);
+	}
+	
+	public void setCurrentSongIndex(int index) {
+		currentIndex = index;
 	}
 	
 	public SongInfo SkipToNextSong() {
